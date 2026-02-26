@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Created-By: IntelliJ IDEA
+Built-By: Асель
+Build-Jdk: Oracle OpenJDK 25.0.1
+Implementation-Title: SchoolSystem
+Implementation-Version: 1.0-SNAPSHOT
+Implementation-Vendor-Id: com.assel
+Main-Class: ${start-class}
+

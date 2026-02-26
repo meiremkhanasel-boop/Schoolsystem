@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление студентами</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<nav class="navbar navbar-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">🏠 School System</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card p-4 mb-5 shadow-sm border-0">
+        <h4 class="text-primary mb-3">Добавить студента</h4>
+        <form th:action="@{/students/add}" method="post" class="row g-3">
+            <div class="col-md-2">
+                <input type="number" name="id" class="form-control" placeholder="ID" required>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="name" class="form-control" placeholder="ФИО студента" required>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="grade" class="form-control" placeholder="Класс (напр. 11-А)" required>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-success w-100">Добавить</button>
+            </div>
+        </form>
+    </div>
+
+    <h2 class="mb-4">Наши студенты</h2>
+    <div class="row">
+        <div class="col-md-4" th:each="student : ${students}">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-primary" th:text="${student.name}">Имя студента</h5>
+                    <p class="card-text">Класс: <b th:text="${student.grade}">10-A</b></p>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge bg-light text-dark" th:text="'ID: ' + ${student.id}"></span>
+                        <a th:href="@{/students/delete/{id}(id=${student.id})}"
+                           class="btn btn-outline-danger btn-sm">Удалить</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

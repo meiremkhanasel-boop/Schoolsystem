@@ -3,25 +3,65 @@ package com.school.model;
 public class Student {
     private Long id;
     private String name;
-    private String grade; // Например, "10-А"
+    private String grade;
 
-    // Конструктор без параметров (нужен для некоторых фреймворков)
-    public Student() {}
+    public Student() {
+    }
 
-    // Конструктор для быстрого создания объекта
     public Student(Long id, String name, String grade) {
         this.id = id;
         this.name = name;
         this.grade = grade;
     }
 
-    // Геттеры и Сеттеры
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getName() {
+        return name;
+    }
 
-    public String getGrade() { return grade; }
-    public void setGrade(String grade) { this.grade = grade; }
+    public String getGrade() {
+        return grade;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setGrade(String grade) {
+        this.grade = grade;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", grade='" + grade + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Student student = (Student) o;
+        if (id != null ? !id.equals(student.id) : student.id != null) return false;
+        if (name != null ? !name.equals(student.name) : student.name != null) return false;
+        return grade != null ? grade.equals(student.grade) : student.grade == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (grade != null ? grade.hashCode() : 0);
+        return result;
+    }
 }

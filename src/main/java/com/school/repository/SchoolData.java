@@ -12,9 +12,8 @@ public class SchoolData {
     private static List<User> users = new ArrayList<>();
 
     static {
-        // Тестовые данные
-        students.add(new Student(1L, "Иван Иванов", "10-А"));
-        teachers.add(new Teacher(1L, "Ольга Петровна", "Математика"));
+        students.add(new Student(1L, "Мейремхан Асель", "10-А"));
+        teachers.add(new Teacher(1L, "Шотха Мейремхан", "Математика"));
         users.add(new User("admin", "123"));
     }
 

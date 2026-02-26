@@ -1,15 +1,15 @@
 package com.school.filter;
 
+import com.school.util.JwtTokenProvider;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-// Применяем фильтр к защищенным разделам
-@WebFilter(urlPatterns = {"/students", "/teachers", "/index.jsp", "/"})
+@WebFilter(urlPatterns = {"/api/students/*", "/api/teachers/*", "/api/logout"})
 public class AuthFilter implements Filter {
+    private final JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -17,25 +17,27 @@ public class AuthFilter implements Filter {
 
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
-        HttpSession session = req.getSession(false);
 
-        String loginURI = req.getContextPath() + "/login";
-        String registerURI = req.getContextPath() + "/register";
+        String authHeader = req.getHeader("Authorization");
 
-        // Проверяем, залогинен ли пользователь
-        boolean loggedIn = (session != null && session.getAttribute("user") != null);
-
-        // Проверяем, не пытается ли пользователь СЕЙЧАС зайти на страницу логина или регистрации
-        boolean loginRequest = req.getRequestURI().equals(loginURI);
-        boolean registerRequest = req.getRequestURI().equals(registerURI);
-
-        if (loggedIn || loginRequest || registerRequest) {
-            // Если залогинен ИЛИ это страница входа/регистрации — пускаем дальше
-            chain.doFilter(request, response);
-        } else {
-            // Если не залогинен и пытается зайти на защищенную страницу — на логин
-            res.sendRedirect(loginURI);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            res.setContentType("application/json");
+            res.getWriter().write("{\"error\": \"Токен жоқ. Authorization: Bearer <token> қойыңыз\"}");
+            return;
         }
+
+        String token = authHeader.substring(7);
+
+        String username = jwtTokenProvider.getUsernameFromToken(token);
+        if (username == null || jwtTokenProvider.isTokenExpired(token)) {
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            res.setContentType("application/json");
+            res.getWriter().write("{\"error\": \"Өндік емес немесе ақталған токен\"}");
+            return;
+        }
+
+        chain.doFilter(request, response);
     }
 
     @Override

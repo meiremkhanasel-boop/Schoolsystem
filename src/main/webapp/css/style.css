@@ -4,7 +4,7 @@
     --secondary-color: #1cc88a;
 }
 body {
-    background: #f4f7f6; /* Светло-серый фон вместо чисто белого */
+    background: #f4f7f6;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 .card {
@@ -13,7 +13,7 @@ body {
     transition: transform 0.2s;
 }
 .card:hover {
-    transform: translateY(-5px); /* Эффект парения */
+    transform: translateY(-5px);
 }
 .navbar {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -22,3 +22,14 @@ body {
 .btn-primary { background-color: var(--primary-color); border: none; }
 .btn-success { background-color: var(--secondary-color); border: none; }
 .table { background: white; border-radius: 10px; overflow: hidden; }
+.form-control { border-radius: 8px; border: 1px solid #ddd; }
+.btn { border-radius: 8px; font-weight: 600; }
+.bg-primary { background: linear-gradient(45deg, #4e73df, #224abe) !important; }
+.bg-success { background: linear-gradient(45deg, #1cc88a, #13855c) !important; }
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+}
+.btn-success {
+    background-color: var(--secondary-color) !important;
+}
