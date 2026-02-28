@@ -10,7 +10,7 @@ public class RegisterController {
 
     @GetMapping("/register")
     public String showRegisterPage() {
-        return "register"; // ищем register.html
+        return "register";
     }
 
     @PostMapping("/register")

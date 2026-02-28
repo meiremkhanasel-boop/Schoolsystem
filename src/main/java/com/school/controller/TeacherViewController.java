@@ -21,7 +21,7 @@ public class TeacherViewController {
                              @RequestParam String name,
                              @RequestParam String subject) {
         SchoolData.getTeachers().add(new Teacher(id, name, subject));
-        return "redirect:/teachers"; // Перезагружаем страницу, чтобы увидеть нового учителя
+        return "redirect:/teachers";
     }
 
     @GetMapping("/delete/{id}")

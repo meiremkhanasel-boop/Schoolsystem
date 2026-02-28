@@ -1,7 +1,4 @@
-#!/bin/bash
 
-# School System API - Скрипт для тестирования
-# Использование: ./test-api.sh
 
 BASE_URL="http://localhost:8090/api"
 TOKEN=""

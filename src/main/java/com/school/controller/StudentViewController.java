@@ -13,7 +13,7 @@ public class StudentViewController {
     @GetMapping
     public String showStudents(Model model) {
         model.addAttribute("students", SchoolData.getStudents());
-        return "students"; // Открывает файл src/main/resources/templates/students.html
+        return "students";
     }
 
     @PostMapping("/add")
