@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Домашние задания — School System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<nav class="navbar navbar-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">🏫 School System</a>
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/students}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👨‍🎓 Студенты</a>
+            <a th:href="@{/teachers}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👩‍🏫 Учителя</a>
+            <a th:href="@{/subjects}" class="btn btn-outline-light btn-sm">📚 Предметы</a>
+            <a th:href="@{/ratings}" class="btn btn-outline-light btn-sm">⭐ Оценки</a>
+            <a th:href="@{/homework}" class="btn btn-light btn-sm">📝 ДЗ</a>
+            <a th:href="@{/}" class="btn btn-outline-light btn-sm">🏠 Главная</a>
+            <a th:if="${isAdmin}" th:href="@{/admin}" class="btn btn-danger btn-sm">👑 Админ</a>
+            <div class="dropdown">
+                <a href="#" class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                    <span th:if="${isAdmin}" class="badge bg-danger p-1 me-1">A</span>
+                    <span th:if="${isTeacher}" class="badge bg-info p-1 me-1">T</span>
+                    <span th:unless="${isAdmin or isTeacher}" class="badge bg-white text-primary p-1 me-1">S</span>
+                    <span th:text="${username}">User</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" th:href="@{/profile}">Профиль</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="dropdown-item p-0">
+                            <button class="btn btn-link dropdown-item text-danger">Выйти</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">📝 Домашние задания</h2>
+            <p class="text-muted small">Список заданий и их статус</p>
+        </div>
+        <!-- Button trigger modal for adding homework -->
+        <button th:if="${isAdmin or isTeacher}" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addHomeworkModal">
+            ➕ Назначить ДЗ
+        </button>
+    </div>
+
+    <!-- Flash Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible shadow-sm fade show" role="alert">
+        ✅ <span th:text="${success}">Успешно</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible shadow-sm fade show" role="alert">
+        ❌ <span th:text="${error}">Ошибка</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Фильтр для админ/учителей -->
+    <div class="card shadow-sm border-0 mb-4 p-4" th:if="${isAdmin or isTeacher}">
+        <form action="/homework" method="get">
+            <div class="row align-items-end g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Выберите ученика для просмотра его ДЗ:</label>
+                    <select name="studentId" class="form-select">
+                        <option value="">-- Все ученики --</option>
+                        <option th:each="student : ${students}"
+                                th:value="${student.id}"
+                                th:text="${student != null ? (student.name + ' (' + student.grade + ' класс)') : 'N/A'}"
+                                th:selected="${studentId != null and studentId == student.id}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-success w-100">Показать</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Таблица ДЗ -->
+    <div class="card border-0 shadow-sm" th:if="${not #lists.isEmpty(homeworks)}">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">📚 Предмет</th>
+                        <th>📝 Задание</th>
+                        <th th:if="${isAdmin or isTeacher}">👤 Студент</th>
+                        <th>📌 Статус</th>
+                        <th class="text-end pe-3">⚡ Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="hw : ${homeworks}">
+                        <td class="ps-3">
+                            <span th:if="${hw != null && hw.subject != null}" class="badge bg-info text-dark" th:text="${hw.subject.name}">Предмет</span>
+                            <span th:unless="${hw != null && hw.subject != null}" class="badge bg-secondary">—</span>
+                        </td>
+                        <td>
+                            <small th:if="${hw != null && hw.description != null}" th:text="${hw.description}">Задание</small>
+                            <small th:unless="${hw != null && hw.description != null}" class="text-muted">—</small>
+                        </td>
+                        <td th:if="${isAdmin or isTeacher}">
+                            <span th:if="${hw != null && hw.student != null}" class="fw-bold text-primary" th:text="${hw.student.name}">Ученик</span>
+                            <span th:unless="${hw != null && hw.student != null}" class="text-muted">—</span>
+                        </td>
+                        <td>
+                            <span th:if="${hw != null && hw.status == 'ВЫПОЛНЕНО'}" class="badge bg-success">✓ ВЫПОЛНЕНО</span>
+                            <span th:if="${hw != null && hw.status == 'НЕ ВЫПОЛНЕНО'}" class="badge bg-warning text-dark">✗ НЕ ВЫПОЛНЕНО</span>
+                            <span th:unless="${hw != null && hw.status != null}" class="badge bg-secondary">—</span>
+                        </td>
+                        <td class="text-end pe-3">
+                            <form th:if="${hw != null && hw.status == 'НЕ ВЫПОЛНЕНО'}" th:action="@{/homework/{id}/complete(id=${hw.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-success">Выполнено</button>
+                            </form>
+                            <span th:if="${hw != null && hw.status == 'ВЫПОЛНЕНО'}" class="text-success small">✓ Завершено</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Пустой список -->
+    <div class="card border-0 shadow-sm" th:if="${#lists.isEmpty(homeworks)}">
+        <div class="card-body text-center py-4 text-muted">
+            <p>📝 Нет домашних заданий.</p>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal for Adding Homework -->
+<div class="modal fade" id="addHomeworkModal" tabindex="-1" th:if="${isAdmin or isTeacher}">
+    <div class="modal-dialog">
+        <form class="modal-content" th:action="@{/homework/add}" method="post">
+            <div class="modal-header">
+                <h5 class="modal-title">➕ Назначить домашнее задание</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Ученик</label>
+                    <select name="studentId" class="form-select" required>
+                        <option value="">-- Выберите ученика --</option>
+                        <option th:each="student : ${students}"
+                                th:value="${student.id}"
+                                th:text="${student != null ? student.name : 'N/A'}"></option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Предмет</label>
+                    <select name="subjectId" class="form-select" required>
+                        <option value="">-- Выберите предмет --</option>
+                        <option th:each="subj : ${subjects}"
+                                th:value="${subj.id}"
+                                th:text="${subj != null ? subj.name : 'N/A'}"></option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Задание</label>
+                    <textarea name="description" class="form-control" rows="3" required placeholder="Опишите, что нужно сделать..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-primary">Отправить ученику</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Администрирование — School System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<nav class="navbar navbar-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">🏫 School System</a>
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/students}" class="btn btn-outline-light btn-sm">👨‍🎓 Студенты</a>
+            <a th:href="@{/teachers}" class="btn btn-outline-light btn-sm">👩‍🏫 Учителя</a>
+            <a th:href="@{/subjects}" class="btn btn-outline-light btn-sm">📚 Предметы</a>
+            <a th:href="@{/ratings}" class="btn btn-outline-light btn-sm">⭐ Оценки</a>
+            <a th:href="@{/homework}" class="btn btn-outline-light btn-sm">📝 ДЗ</a>
+            <a th:href="@{/dashboard}" class="btn btn-outline-light btn-sm">📊 Dashboard</a>
+            <a th:href="@{/}" class="btn btn-outline-light btn-sm">🏠 Главная</a>
+            <div class="dropdown">
+                <a href="#" class="btn btn-danger btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                    <span class="badge bg-white text-danger p-1 me-1">A</span>
+                    <span th:text="${username}">Admin</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" th:href="@{/profile}">Профиль</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="dropdown-item p-0">
+                            <button class="btn btn-link dropdown-item text-danger">Выйти</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="mb-4">
+        <h2 class="fw-bold">👑 Администрирование</h2>
+        <p class="text-muted">Управление пользователями и системой</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <a th:href="@{/admin/users}" class="card text-decoration-none text-dark h-100">
+                <div class="card-body text-center">
+                    <h3>👥</h3>
+                    <h5 class="card-title">Управление пользователями</h5>
+                    <p class="text-muted small">Добавить, изменить, удалить пользователей</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 mb-3">
+            <a th:href="@{/dashboard}" class="card text-decoration-none text-dark h-100">
+                <div class="card-body text-center">
+                    <h3>📊</h3>
+                    <h5 class="card-title">Dashboard</h5>
+                    <p class="text-muted small">Статистика и аналитика системы</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white fw-bold">Быстрые ссылки</div>
+        <div class="card-body">
+            <a th:href="@{/students}" class="btn btn-outline-primary btn-sm me-2 mb-2">Управление студентами</a>
+            <a th:href="@{/teachers}" class="btn btn-outline-info btn-sm me-2 mb-2">Управление учителями</a>
+            <a th:href="@{/subjects}" class="btn btn-outline-success btn-sm me-2 mb-2">Управление предметами</a>
+            <a th:href="@{/ratings}" class="btn btn-outline-warning btn-sm me-2 mb-2">Управление оценками</a>
+            <a th:href="@{/homework}" class="btn btn-outline-secondary btn-sm mb-2">Управление ДЗ</a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Профиль — School System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<nav class="navbar navbar-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">🏫 School System</a>
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/}" class="btn btn-outline-light btn-sm">🏠 Главная</a>
+            <a th:href="@{/students}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👨‍🎓 Студенты</a>
+            <a th:href="@{/teachers}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👩‍🏫 Учителя</a>
+            <a th:href="@{/subjects}" class="btn btn-outline-light btn-sm">📚 Предметы</a>
+            <a th:href="@{/ratings}" class="btn btn-outline-light btn-sm">⭐ Оценки</a>
+            <a th:href="@{/homework}" class="btn btn-outline-light btn-sm">📝 ДЗ</a>
+            <a th:if="${isAdmin}" th:href="@{/admin}" class="btn btn-danger btn-sm">👑 Админ</a>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-light btn-sm">Выйти</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div class="row justify-content-center g-4">
+
+        <div class="col-md-5 col-lg-4">
+            <div class="card border-0 shadow-lg">
+                <div class="text-center py-5 px-4"
+                     th:style="${isAdmin} ? 'background:linear-gradient(135deg,#e74a3b,#c0392b);border-radius:14px 14px 0 0' : 'background:linear-gradient(135deg,#4e73df,#2e59d9);border-radius:14px 14px 0 0'">
+                    <div class="profile-avatar" style="background:rgba(255,255,255,0.2);margin:0 auto 16px;">
+                        <span th:text="${#strings.substring(username,0,1).toUpperCase()}">A</span>
+                    </div>
+                    <h3 class="text-white fw-bold mb-1" th:text="${username}">username</h3>
+                    <span th:if="${isAdmin}" class="badge bg-white text-danger fs-6 px-3 py-2">👑 ADMINISTRATOR</span>
+                    <span th:unless="${isAdmin}" class="badge bg-white text-primary fs-6 px-3 py-2">👤 USER</span>
+                </div>
+
+                <div class="card-body p-4">
+                    <h6 class="text-muted fw-semibold mb-3 small">📋 ИНФОРМАЦИЯ ОБ АККАУНТЕ</h6>
+
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted small">👤 Логин</span>
+                        <strong th:text="${username}">—</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted small">🛡 Роль</span>
+                        <span th:each="role : ${roles}"
+                              th:class="${role.authority == 'ROLE_ADMIN'} ? 'badge bg-danger me-1' : 'badge bg-primary me-1'"
+                              th:text="${role.authority}">—</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted small">✅ Статус</span>
+                        <span class="badge bg-success">Активен</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted small">🔐 Сессия</span>
+                        <span class="badge bg-info text-dark">Активна</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted small">🕐 Время входа</span>
+                        <small class="text-muted fw-semibold" th:text="${loginTime}">—</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted small">🕑 Последняя активность</span>
+                        <small class="text-muted fw-semibold" th:text="${lastAccessTime}">—</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted small">⏳ Таймаут сессии</span>
+                        <span class="badge bg-warning text-dark" th:text="${sessionExpireIn}">30 мин</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2">
+                        <span class="text-muted small">🔑 ID сессии</span>
+                        <code class="small text-secondary" th:text="${sessionId}">—</code>
+                    </div>
+
+                    <div class="mt-3 p-3 rounded-3"
+                         th:style="${isAdmin} ? 'background:#fde8e8;border-left:4px solid #e74a3b' : 'background:#e8f0fe;border-left:4px solid #4e73df'">
+                        <div th:if="${isAdmin}">
+                            <strong class="text-danger">👑 Права администратора</strong><br>
+                            <small class="text-muted">Полный доступ: просмотр, добавление, редактирование, удаление, управление пользователями</small>
+                        </div>
+                        <div th:unless="${isAdmin}">
+                            <strong class="text-primary">👤 Права пользователя</strong><br>
+                            <small class="text-muted">Только просмотр данных. Для изменений обратитесь к администратору</small>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <a th:href="@{/}" class="btn btn-primary flex-grow-1">🏠 Главная</a>
+                        <form th:action="@{/logout}" method="post" class="flex-grow-1 m-0">
+                            <button type="submit" class="btn btn-outline-danger w-100">👋 Выйти</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5 col-lg-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header fw-bold border-0 pt-4 pb-3 px-4"
+                     style="background:white;border-bottom:2px solid #f0f0f0">
+                    🔑 Сменить пароль
+                </div>
+                <div class="card-body p-4">
+
+                    <div th:if="${passSuccess}" class="alert alert-success alert-dismissible fade show py-2 small">
+                        <span th:text="${passSuccess}"></span>
+                        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                    </div>
+                    <div th:if="${passError}" class="alert alert-danger alert-dismissible fade show py-2 small">
+                        <span th:text="${passError}"></span>
+                        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <form th:action="@{/profile/change-password}" method="post" id="changePassForm">
+                        <div class="mb-3">
+                            <label for="oldPass" class="form-label fw-semibold small text-muted">ТЕКУЩИЙ ПАРОЛЬ</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">🔒</span>
+                                <input type="password" name="oldPassword" id="oldPass"
+                                       class="form-control" placeholder="Введите текущий пароль" required
+                                       aria-label="Текущий пароль">
+                                <button type="button" class="btn btn-light border" onclick="toggleVis('oldPass',this)">👁</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPass" class="form-label fw-semibold small text-muted">НОВЫЙ ПАРОЛЬ</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">🆕</span>
+                                <input type="password" name="newPassword" id="newPass"
+                                       class="form-control" placeholder="Минимум 4 символа" required
+                                       minlength="4" oninput="checkPassStrength(this)"
+                                       aria-label="Новый пароль">
+                                <button type="button" class="btn btn-light border" onclick="toggleVis('newPass',this)">👁</button>
+                            </div>
+                            <div class="progress mt-2" style="height:4px;border-radius:4px">
+                                <div id="passStrength" class="progress-bar bg-danger" style="width:0"></div>
+                            </div>
+                            <small id="passHint" class="text-muted"></small>
+                        </div>
+                        <div class="mb-4">
+                            <label for="confirmPass" class="form-label fw-semibold small text-muted">ПОДТВЕРЖДЕНИЕ ПАРОЛЯ</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">✅</span>
+                                <input type="password" name="confirmPassword" id="confirmPass"
+                                       class="form-control" placeholder="Повторите новый пароль" required
+                                       oninput="checkConfirm(this)"
+                                       aria-label="Подтверждение пароля">
+                                <button type="button" class="btn btn-light border" onclick="toggleVis('confirmPass',this)">👁</button>
+                            </div>
+                            <small id="confirmHint" class="text-muted"></small>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100 fw-bold">
+                            🔑 Сменить пароль
+                        </button>
+                    </form>
+
+                    <div class="mt-4 p-3 bg-light rounded-3">
+                        <div class="fw-semibold small mb-2">💡 Советы по безопасности:</div>
+                        <ul class="small text-muted mb-0 ps-3">
+                            <li>Используйте не менее 8 символов</li>
+                            <li>Комбинируйте буквы, цифры и символы</li>
+                            <li>Не используйте один пароль для разных сайтов</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-body p-3">
+                    <div class="fw-semibold small text-muted mb-2">🔗 Быстрые ссылки</div>
+                    <div class="d-flex flex-wrap gap-2">
+            <a th:href="@{/students}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👨‍🎓 Студенты</a>
+                        <a th:href="@{/teachers}" class="btn btn-outline-success btn-sm">👩‍🏫 Учителя</a>
+                        <a th:if="${isAdmin}" th:href="@{/dashboard}" class="btn btn-outline-info btn-sm">📊 Дашборд</a>
+                        <a th:if="${isAdmin}" th:href="@{/admin}" class="btn btn-outline-danger btn-sm">👑 Админ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer class="site-footer">School Management System &copy; 2026</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+function toggleVis(id, btn) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+    btn.textContent = el.type === 'password' ? '👁' : '🙈';
+}
+
+function checkPassStrength(el) {
+    const val = el.value;
+    const bar = document.getElementById('passStrength');
+    const hint = document.getElementById('passHint');
+    let strength = 0;
+    if (val.length >= 4) strength += 25;
+    if (val.length >= 8) strength += 25;
+    if (/[A-Z]/.test(val) || /[а-яА-Я]/.test(val)) strength += 25;
+    if (/[0-9!@#$%^&*]/.test(val)) strength += 25;
+    bar.style.width = strength + '%';
+    if (strength <= 25) { bar.className='progress-bar bg-danger'; hint.textContent='Слабый пароль'; hint.className='text-danger small'; }
+    else if (strength <= 50) { bar.className='progress-bar bg-warning'; hint.textContent='Средний пароль'; hint.className='text-warning small'; }
+    else if (strength <= 75) { bar.className='progress-bar bg-info'; hint.textContent='Хороший пароль'; hint.className='text-info small'; }
+    else { bar.className='progress-bar bg-success'; hint.textContent='Отличный пароль!'; hint.className='text-success small'; }
+}
+
+function checkConfirm(el) {
+    const hint = document.getElementById('confirmHint');
+    const newPass = document.getElementById('newPass').value;
+    if (el.value === newPass) {
+        hint.innerHTML = '<span class="text-success">✓ Пароли совпадают</span>';
+    } else {
+        hint.innerHTML = '<span class="text-danger">✗ Пароли не совпадают</span>';
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>403 — Доступ запрещён</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        body { background: linear-gradient(135deg, #f8f9fc 0%, #e8ecf8 100%); }
+        .error-icon { font-size: 6rem; animation: shake 0.8s ease-in-out 1s both; }
+        @keyframes shake {
+            0%,100%{transform:rotate(0)} 20%{transform:rotate(-15deg)} 40%{transform:rotate(15deg)}
+            60%{transform:rotate(-10deg)} 80%{transform:rotate(10deg)}
+        }
+        .error-code { font-size: 7rem; font-weight: 900; background: linear-gradient(135deg,#e74a3b,#c0392b);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height:1; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">🏫 School System</a>
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/}" class="btn btn-outline-light btn-sm">🏠 Главная</a>
+            <span class="badge bg-white text-primary">👤 <span th:text="${username}">user</span></span>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button class="btn btn-outline-light btn-sm">Выйти</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-0 shadow-lg text-center p-5">
+                <div class="error-icon">🔒</div>
+                <div class="error-code mt-2">403</div>
+                <h3 class="fw-bold mt-3 mb-2">Доступ запрещён</h3>
+                <p class="text-muted mb-4">
+                    У вас нет прав для просмотра этой страницы.<br>
+                    Эта функция доступна только <strong>администраторам</strong>.
+                </p>
+
+                <div class="p-3 rounded-3 mb-4 text-start"
+                     style="background:#fff3cd; border-left:4px solid #ffc107">
+                    <div class="fw-semibold mb-1">⚠️ Информация о доступе</div>
+                    <table class="table table-sm table-borderless mb-0 small">
+                        <tr>
+                            <td class="text-muted">Ваш логин:</td>
+                            <td><strong th:text="${username}">—</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Ваша роль:</td>
+                            <td><span class="badge bg-primary">👤 USER</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Требуется:</td>
+                            <td><span class="badge bg-danger">👑 ADMIN</span></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <a th:href="@{/}" class="btn btn-primary">🏠 На главную</a>
+                    <a th:href="@{/students}" class="btn btn-outline-primary">👨‍🎓 Студенты</a>
+                    <a th:href="@{/teachers}" class="btn btn-outline-success">👩‍🏫 Учителя</a>
+                    <a th:href="@{/profile}" class="btn btn-outline-secondary">👤 Профиль</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="site-footer">School Management System &copy; 2026</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

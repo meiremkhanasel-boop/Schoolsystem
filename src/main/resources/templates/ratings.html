@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Оценки — School System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<nav class="navbar navbar-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">🏫 School System</a>
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/students}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👨‍🎓 Студенты</a>
+            <a th:href="@{/teachers}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👩‍🏫 Учителя</a>
+            <a th:href="@{/subjects}" class="btn btn-outline-light btn-sm">📚 Предметы</a>
+            <a th:href="@{/ratings}" class="btn btn-light btn-sm">⭐ Оценки</a>
+            <a th:href="@{/homework}" class="btn btn-outline-light btn-sm">📝 ДЗ</a>
+            <a th:href="@{/}" class="btn btn-outline-light btn-sm">🏠 Главная</a>
+            <a th:if="${isAdmin}" th:href="@{/admin}" class="btn btn-danger btn-sm">👑 Админ</a>
+            <div class="dropdown">
+                <a href="#" class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                    <span th:if="${isAdmin}" class="badge bg-danger p-1 me-1">A</span>
+                    <span th:unless="${isAdmin}" class="badge bg-white text-primary p-1 me-1">U</span>
+                    <span th:text="${username}">User</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" th:href="@{/profile}">Профиль</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="dropdown-item p-0">
+                            <button class="btn btn-link dropdown-item text-danger">Выйти</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="fw-bold mb-0">⭐ Оценки</h3>
+            <p class="text-muted small mb-0">Журнал успеваемости</p>
+        </div>
+
+        <button th:if="${isAdmin}"
+                class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addRatingModal">
+            📝 Поставить оценку
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white fw-bold">Последние оценки</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-3">Дата</th>
+                            <th th:if="${isAdmin or isTeacher}">Студент</th>
+                            <th>Предмет</th>
+                            <th>Оценка</th>
+                            <th>Преподаватель</th>
+                            <th th:if="${isAdmin}" class="text-end pe-3">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="rating : ${ratings}">
+                            <td class="ps-3 text-muted small" th:text="${rating != null && rating.date != null ? rating.date : '—'}">2023-01-01</td>
+                            <td th:if="${isAdmin or isTeacher}" class="fw-bold text-primary">
+                                <span th:if="${rating != null && rating.student != null}" th:text="${rating.student.name}">Студент</span>
+                                <span th:unless="${rating != null && rating.student != null}">—</span>
+                                <small class="text-muted d-block" th:if="${rating != null && rating.student != null}" th:text="${rating.student.grade}">10-A</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark" th:if="${rating != null && rating.subject != null}" th:text="${rating.subject.name}">Предмет</span>
+                                <span class="badge bg-secondary" th:unless="${rating != null && rating.subject != null}">—</span>
+                            </td>
+                            <td>
+                                <span th:if="${rating != null && rating.score == 5}" class="badge bg-success fs-6">5</span>
+                                <span th:if="${rating != null && rating.score == 4}" class="badge bg-primary fs-6">4</span>
+                                <span th:if="${rating != null && rating.score == 3}" class="badge bg-warning text-dark fs-6">3</span>
+                                <span th:if="${rating != null && rating.score == 2}" class="badge bg-danger fs-6">2</span>
+                                <span th:unless="${rating != null && rating.score != null}">—</span>
+                            </td>
+                            <td class="small text-muted">
+                                <span th:if="${rating != null && rating.teacher != null}" th:text="${rating.teacher.name}">Учитель</span>
+                                <span th:unless="${rating != null && rating.teacher != null}">—</span>
+                            </td>
+                            <td th:if="${isAdmin}" class="text-end pe-3">
+                                <a th:href="@{'/ratings/delete/' + ${rating.id}}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Удалить эту оценку?');">
+                                    🗑
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(ratings)}">
+                            <td th:colspan="${isAdmin or isTeacher ? 6 : 5}" class="text-center py-4 text-muted">
+                                Оценок пока нет.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addRatingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/ratings/add}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Поставить оценку</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Студент</label>
+                        <select name="studentId" class="form-select" required>
+                             <option value="" disabled selected>Выберите студента...</option>
+                             <option th:each="s : ${students}" th:value="${s.id}"
+                                     th:text="${s.name + ' (' + s.grade + ')'}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Предмет</label>
+                        <select name="subjectId" class="form-select" required>
+                             <option value="" disabled selected>Выберите предмет...</option>
+                             <option th:each="subj : ${subjects}" th:value="${subj.id}"
+                                     th:text="${subj.name}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Оценка</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="score" id="s5" value="5" checked>
+                            <label class="btn btn-outline-success" for="s5">5</label>
+
+                            <input type="radio" class="btn-check" name="score" id="s4" value="4">
+                            <label class="btn btn-outline-primary" for="s4">4</label>
+
+                            <input type="radio" class="btn-check" name="score" id="s3" value="3">
+                            <label class="btn btn-outline-warning" for="s3">3</label>
+
+                            <input type="radio" class="btn-check" name="score" id="s2" value="2">
+                            <label class="btn btn-outline-danger" for="s2">2</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Преподаватель (опционально)</label>
+                        <select name="teacherId" class="form-select">
+                             <option value="">— Не выбрано —</option>
+                             <option th:each="t : ${teachers}" th:value="${t.id}"
+                                     th:text="${t.name}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

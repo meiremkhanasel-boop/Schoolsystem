@@ -1,50 +1,160 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Управление учителями</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Учителя — School System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-
-<nav class="navbar navbar-dark mb-4">
+<nav class="navbar navbar-dark">
     <div class="container">
-        <a class="navbar-brand" th:href="@{/}">🏠 Главная</a>
-        <span class="navbar-text text-white fw-bold">Система Учителей</span>
+        <a class="navbar-brand fw-bold" th:href="@{/}">🏫 School System</a>
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/students}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👨‍🎓 Студенты</a>
+            <a th:href="@{/teachers}" th:if="${isAdmin or isTeacher}" class="btn btn-light btn-sm">👩‍🏫 Учителя</a>
+            <a th:href="@{/subjects}" class="btn btn-outline-light btn-sm">📚 Предметы</a>
+            <a th:href="@{/ratings}" class="btn btn-outline-light btn-sm">⭐ Оценки</a>
+            <a th:href="@{/homework}" class="btn btn-outline-light btn-sm">📝 ДЗ</a>
+            <a th:href="@{/}" class="btn btn-outline-light btn-sm">🏠 Главная</a>
+            <a th:if="${isAdmin}" th:href="@{/admin}" class="btn btn-danger btn-sm">👑 Админ</a>
+            <a th:href="@{/profile}" class="text-white text-decoration-none">
+                <span th:if="${isAdmin}" class="badge bg-danger">👑 <span th:text="${username}"></span></span>
+                <span th:unless="${isAdmin}" class="badge bg-white text-success">👤 <span th:text="${username}"></span></span>
+            </a>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-light btn-sm">Выйти</button>
+            </form>
+        </div>
     </div>
 </nav>
 
-<div class="container">
-    <div class="card p-4 mb-5 shadow-sm border-0">
-        <h4 class="mb-3 text-primary">Добавить нового преподавателя</h4>
-        <form th:action="@{/teachers/add}" method="post" class="row g-3">
-            <div class="col-md-2">
-                <input type="number" name="id" class="form-control" placeholder="ID" required>
+<div class="container py-4">
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+        ✅ <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+        ❌ <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="fw-bold mb-0">👩‍🏫 Учителя</h3>
+            <p class="text-muted small mb-0">Мұғалімдер тізімі / Список преподавателей</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="badge bg-success fs-6" th:text="'Барлығы: ' + ${#lists.size(teachers)}"></span>
+            <span th:unless="${isAdmin}" class="badge bg-warning text-dark">👁 Только просмотр</span>
+        </div>
+    </div>
+
+    <div class="search-panel">
+        <form th:action="@{/teachers}" method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold text-muted">🔍 ПОИСК ПО ИМЕНИ</label>
+                <input type="text" name="search" class="form-control"
+                       placeholder="Введите имя учителя..." th:value="${search}">
             </div>
             <div class="col-md-4">
-                <input type="text" name="name" class="form-control" placeholder="ФИО учителя" required>
+                <label class="form-label small fw-semibold text-muted">📚 ФИЛЬТР ПО ПРЕДМЕТУ</label>
+                <select name="subject" class="form-select">
+                    <option value="">— Все предметы —</option>
+                    <option th:each="s : ${allSubjects}" th:value="${s}" th:text="${s}"
+                            th:selected="${s == filterSubject}"></option>
+                </select>
             </div>
-            <div class="col-md-4">
-                <input type="text" name="subject" class="form-control" placeholder="Предмет (напр. Физика)" required>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-success w-100">Сохранить</button>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-success flex-grow-1">Найти</button>
+                <a th:href="@{/teachers}" class="btn btn-outline-secondary">✕</a>
             </div>
         </form>
     </div>
 
-    <h2 class="mb-4">Список преподавателей</h2>
-    <div class="row">
-        <div class="col-md-4" th:each="teacher : ${teachers}">
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title text-primary" th:text="${teacher.name}">ФИО</h5>
-                    <p class="card-text"><strong>Предмет:</strong> <span th:text="${teacher.subject}">Предмет</span></p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-secondary" th:text="'ID: ' + ${teacher.id}"></span>
+    <div class="add-panel" th:if="${isAdmin}">
+        <h5 class="fw-bold text-success mb-3">➕ Добавить преподавателя</h5>
+        <form th:action="@{/teachers/add}" method="post" class="row g-2">
+            <div class="col-md-3">
+                <input type="text" name="name" class="form-control" placeholder="ФИО учителя" required>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="subject" class="form-control" placeholder="Предмет" required>
+            </div>
+            <div class="col-md-3">
+                <input type="email" name="email" class="form-control" placeholder="Email (необязательно)">
+            </div>
+            <div class="col-md-1">
+                <input type="number" name="experience" class="form-control" placeholder="Лет" min="0" max="50">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-success w-100">➕ Добавить</button>
+            </div>
+        </form>
+    </div>
+
+    <div th:unless="${isAdmin}" class="alert alert-info border-0 mb-3"
+         style="background:#e8f4fd;border-left:4px solid #36b9cc!important">
+        ℹ️ Вы просматриваете данные в режиме <strong>только чтение</strong>.
+        Добавление, редактирование и удаление доступно только администраторам.
+    </div>
+
+    <div th:if="${#lists.isEmpty(teachers)}" class="card">
+        <div class="empty-state">
+            <div class="empty-icon">👩‍🏫</div>
+            <h5 class="text-muted">Мұғалімдер жоқ</h5>
+            <p class="text-muted small">Список пуст.</p>
+        </div>
+    </div>
+
+    <div class="row g-3" th:unless="${#lists.isEmpty(teachers)}">
+        <div class="col-md-4 col-lg-3" th:each="teacher : ${teachers}">
+            <div class="person-card">
+                <div class="card-header d-flex align-items-center gap-2"
+                     style="background:linear-gradient(135deg,#e8f8f2,#c3eed9)">
+                    <div class="avatar" style="background:linear-gradient(135deg,#1cc88a,#13855c);color:white">
+                        <span th:text="${#strings.substring(teacher.name,0,1)}">И</span>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="text-truncate fw-bold text-dark" th:text="${teacher.name}">Имя</div>
+                        <small class="text-muted">ID: <span th:text="${teacher.id}"></span></small>
+                    </div>
+                    <span th:if="${teacher.status == 'active'}" class="badge-active">●active</span>
+                    <span th:unless="${teacher.status == 'active'}" class="badge-inactive">●inactive</span>
+                </div>
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted small">Предмет:</span>
+                        <span class="badge bg-success" th:text="${teacher.subject}">—</span>
+                    </div>
+                    <div th:if="${teacher.experience != null}" class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small">Стаж:</span>
+                        <small th:text="${teacher.experience} + ' лет'"></small>
+                    </div>
+                    <div th:if="${teacher.email}" class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small">Email:</span>
+                        <small class="text-truncate ms-2" th:text="${teacher.email}"></small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small">Добавлен:</span>
+                        <small class="text-muted"
+                               th:text="${#temporals.format(teacher.createdAt,'dd.MM.yyyy')}">—</small>
+                    </div>
+                    <div class="d-flex gap-1" th:if="${isAdmin}">
+                        <button type="button" class="btn btn-outline-primary btn-sm flex-grow-1"
+                                th:data-id="${teacher.id}"
+                                th:data-name="${teacher.name}"
+                                th:data-subject="${teacher.subject}"
+                                th:data-experience="${teacher.experience}"
+                                th:data-action="@{/teachers/edit/{id}(id=${teacher.id})}"
+                                onclick="openEditModal(this)">✏ Изменить</button>
                         <a th:href="@{/teachers/delete/{id}(id=${teacher.id})}"
-                           class="btn btn-outline-danger btn-sm">Удалить</a>
+                           class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('Удалить учителя?')">🗑</a>
+                    </div>
+                    <div th:unless="${isAdmin}">
+                        <span class="badge bg-light text-muted w-100 text-center py-2">👁 Только просмотр</span>
                     </div>
                 </div>
             </div>
@@ -52,5 +162,62 @@
     </div>
 </div>
 
+<div class="modal fade" id="editModal" tabindex="-1" th:if="${isAdmin}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">✏ Редактировать учителя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editForm" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">ФИО учителя</label>
+                        <input type="text" name="name" id="editName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Предмет</label>
+                        <input type="text" name="subject" id="editSubject" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input type="email" name="email" id="editEmail" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Стаж (лет)</label>
+                        <input type="number" name="experience" id="editExp" class="form-control" min="0" max="50">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Статус</label>
+                        <select name="status" id="editStatus" class="form-select">
+                            <option value="active">✅ Активный</option>
+                            <option value="inactive">❌ Неактивный</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success">💾 Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer class="site-footer">School Management System &copy; 2026</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function openEditModal(btn) {
+    document.getElementById('editName').value    = btn.getAttribute('data-name') || '';
+    document.getElementById('editSubject').value = btn.getAttribute('data-subject') || '';
+    document.getElementById('editEmail').value   = btn.getAttribute('data-email') || '';
+    document.getElementById('editExp').value     = btn.getAttribute('data-experience') || '';
+    // Установить action сгенерированный Thymeleaf для учета context-path
+    document.getElementById('editForm').action   = btn.getAttribute('data-action');
+    document.getElementById('editForm').method = 'POST';
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+</script>
 </body>
 </html>
+

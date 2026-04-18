@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard — School System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">🏫 School System</a>
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/students}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👨‍🎓 Студенты</a>
+            <a th:href="@{/teachers}" th:if="${isAdmin or isTeacher}" class="btn btn-outline-light btn-sm">👩‍🏫 Учителя</a>
+            <a th:href="@{/subjects}" class="btn btn-outline-light btn-sm">📚 Предметы</a>
+            <a th:href="@{/ratings}" class="btn btn-outline-light btn-sm">⭐ Оценки</a>
+            <a th:href="@{/homework}" class="btn btn-outline-light btn-sm">📝 ДЗ</a>
+            <a th:href="@{/dashboard}" class="btn btn-light btn-sm">📊 Dashboard</a>
+            <a th:href="@{/}" class="btn btn-outline-light btn-sm">🏠 Главная</a>
+            <a th:if="${isAdmin}" th:href="@{/admin}" class="btn btn-danger btn-sm">👑 Админ</a>
+            <div class="dropdown">
+                <a href="#" class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                    <span th:if="${isAdmin}" class="badge bg-danger p-1 me-1">A</span>
+                    <span th:unless="${isAdmin}" class="badge bg-white text-primary p-1 me-1">U</span>
+                    <span th:text="${username}">User</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" th:href="@{/profile}">Профиль</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="dropdown-item p-0">
+                            <button class="btn btn-link dropdown-item text-danger">Выйти</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="mb-4">
+        <h2 class="fw-bold">📊 Dashboard</h2>
+        <p class="text-muted">Статистика и аналитика системы</p>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-primary fw-bold" th:text="${studentCount}">0</h3>
+                    <p class="text-muted mb-0">👨‍🎓 Студентов</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-info fw-bold" th:text="${teacherCount}">0</h3>
+                    <p class="text-muted mb-0">👩‍🏫 Учителей</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-success fw-bold" th:text="${userCount}">0</h3>
+                    <p class="text-muted mb-0">👥 Пользователей</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-warning fw-bold" th:text="${adminCount}">0</h3>
+                    <p class="text-muted mb-0">👑 Администраторов</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="fw-bold mb-2">👨‍🎓 Активные студенты</h4>
+                    <h3 class="text-primary fw-bold" th:text="${activeStudents}">0</h3>
+                    <p class="text-muted small mb-0">из <span th:text="${studentCount}">0</span></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="fw-bold mb-2">👩‍🏫 Активные учителя</h4>
+                    <h3 class="text-info fw-bold" th:text="${activeTeachers}">0</h3>
+                    <p class="text-muted small mb-0">из <span th:text="${teacherCount}">0</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3" th:if="${!#maps.isEmpty(gradeStats)}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white fw-bold">Студенты по классам</div>
+                <div class="card-body">
+                    <canvas id="gradesChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3" th:if="${!#maps.isEmpty(subjectStats)}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white fw-bold">Учителя по предметам</div>
+                <div class="card-body">
+                    <canvas id="subjectsChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4" th:if="${!#lists.isEmpty(recentStudents)}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white fw-bold">Недавно добавленные студенты</div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div th:each="s : ${recentStudents}" class="list-group-item px-3 py-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0 fw-bold" th:text="${s.name}">Иван Петров</h6>
+                                    <small class="text-muted" th:text="${s.grade}">10-A</small>
+                                </div>
+                                <small class="text-muted" th:text="${s.createdAt}">2024-01-01</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4" th:if="${!#lists.isEmpty(recentTeachers)}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white fw-bold">Недавно добавленные учителя</div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div th:each="t : ${recentTeachers}" class="list-group-item px-3 py-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0 fw-bold" th:text="${t.name}">Петр Сидоров</h6>
+                                    <small class="text-muted" th:text="${t.subject}">Математика</small>
+                                </div>
+                                <small class="text-muted" th:text="${t.createdAt}">2024-01-01</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4 mb-4">
+        <div class="card-header bg-white fw-bold">
+            <span th:if="${dbOk}" class="badge bg-success me-2">✅</span>
+            <span th:unless="${dbOk}" class="badge bg-danger me-2">❌</span>
+            Статус БД
+        </div>
+        <div class="card-body">
+            <p class="mb-2">
+                <strong>Статус:</strong>
+                <span th:if="${dbOk}" class="badge bg-success" th:text="${dbStatus}">Подключено</span>
+                <span th:unless="${dbOk}" class="badge bg-danger" th:text="${dbStatus}">Нет подключения</span>
+            </p>
+            <p class="mb-0">
+                <strong>Тип БД:</strong>
+                <span class="badge bg-info text-dark" th:text="${dbType}">Неизвестно</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const gradeStatsData = /*[[${gradeStats}]]*/ {};
+    const subjectStatsData = /*[[${subjectStats}]]*/ {};
+
+    if (Object.keys(gradeStatsData).length > 0) {
+        const gradeCtx = document.getElementById('gradesChart');
+        if (gradeCtx) {
+            new Chart(gradeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(gradeStatsData),
+                    datasets: [{
+                        data: Object.values(gradeStatsData),
+                        backgroundColor: [
+                            '#0d6efd', '#0dcaf0', '#198754', '#ffc107',
+                            '#dc3545', '#6f42c1', '#20c997', '#fd7e14'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    if (Object.keys(subjectStatsData).length > 0) {
+        const subjectCtx = document.getElementById('subjectsChart');
+        if (subjectCtx) {
+            new Chart(subjectCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(subjectStatsData),
+                    datasets: [{
+                        label: 'Учителя',
+                        data: Object.values(subjectStatsData),
+                        backgroundColor: '#0d6efd'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>
+
